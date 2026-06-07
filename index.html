@@ -423,6 +423,106 @@ body::before {
 .quick-link-icon { font-size: 18px; }
 .quick-link-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
 
+/* CONTENT STUDIO */
+.studio-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.studio-tab {
+  padding: 6px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.studio-tab:hover { border-color: var(--gold); color: var(--gold); }
+.studio-tab.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+.studio-types {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.studio-type {
+  padding: 5px 12px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.studio-type:hover { border-color: var(--gold-dim); color: var(--text); }
+.studio-type.active { border-color: var(--gold); color: var(--gold); }
+
+.studio-output {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--gold);
+  padding: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text);
+  min-height: 140px;
+  font-family: 'DM Sans', sans-serif;
+  white-space: pre-wrap;
+  position: relative;
+}
+
+.studio-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.studio-copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+.studio-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.studio-generate-btn {
+  flex: 1;
+  padding: 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.studio-generate-btn:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.studio-generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -521,6 +621,35 @@ body::before {
     <div style="display:flex;gap:8px">
       <input class="task-input" id="askInput" placeholder="What should I post today? Give me a TikTok idea. What's my next move?" onkeypress="if(event.key==='Enter')askIronbase()" style="font-size:13px"/>
       <button class="task-add-btn" onclick="askIronbase()" style="padding:10px 20px;font-size:14px">ASK</button>
+    </div>
+  </div>
+
+  <!-- CONTENT STUDIO -->
+  <div class="panel panel-full">
+    <div class="panel-label">Content Studio — Trend-Powered</div>
+
+    <div class="studio-tabs">
+      <button class="studio-tab active" onclick="selectPlatform('smokeIron', this)">🥃 Smoke & Iron</button>
+      <button class="studio-tab" onclick="selectPlatform('tiktokEssential', this)">🎵 EssentialFinds</button>
+      <button class="studio-tab" onclick="selectPlatform('linkedin', this)">💼 LinkedIn</button>
+      <button class="studio-tab" onclick="selectPlatform('pinterest', this)">📌 Pinterest</button>
+      <button class="studio-tab" onclick="selectPlatform('gumroad', this)">🛒 Gumroad</button>
+      <button class="studio-tab" onclick="selectPlatform('miicafecito', this)">☕ Miicafecito</button>
+    </div>
+
+    <div class="studio-types" id="studioTypes"></div>
+
+    <div id="studioTrendBar" style="display:none;background:var(--bg4);border:1px solid var(--border);border-left:2px solid var(--gold-dim);padding:10px 14px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px">
+      <span style="color:var(--gold-dim);letter-spacing:2px">TREND INTEL —</span> <span id="studioTrendText">Searching...</span>
+    </div>
+
+    <div class="studio-output" id="studioOutput">
+      <span style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px">Select a platform and content type, then hit Generate. Live trend search included.</span>
+    </div>
+
+    <div class="studio-actions">
+      <button class="studio-generate-btn" id="studioBtn" onclick="generateContent()">⚡ GENERATE + SEARCH TRENDS</button>
+      <button class="studio-generate-btn" id="studioCopyAll" onclick="copyContent()" style="flex:0;padding:14px 20px;font-size:13px;letter-spacing:2px">COPY</button>
     </div>
   </div>
 
@@ -811,6 +940,378 @@ ${question}`
 }
 
 
+// CONTENT STUDIO — TREND POWERED
+const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+
+const PLATFORMS = {
+  smokeIron: {
+    label: 'Smoke & Iron',
+    types: ['TikTok Video Script', 'Father\'s Day Script', 'Product Spotlight Script', 'Caption + Hashtags', 'Weekly Content Plan', 'Pinterest Pin'],
+    searchQuery: (type) => `trending cigar accessories TikTok ${new Date().getFullYear()} men's lifestyle gifts`,
+    prompt: (type, trends) => `You are a content strategist for Smoke & Iron, a premium cigar accessories brand (EST. 2026) run by Francisco Lopez from San Bernardino, CA. Black and gold brand. Masculine, aspirational, lifestyle-focused. Product: premium cigar cutters. TikTok: @smoke.andironco. Francisco does NOT appear on camera — content is product-focused with B-roll visuals.
+
+Today is ${today}. Current month: ${currentMonth}.
+
+LIVE TREND INTEL (use this to make content timely and relevant):
+${trends}
+
+Generate a ${type} for Smoke & Iron. Make it feel premium and cinematic — whiskey by the fire, Friday nights, gifting culture, men who appreciate quality.
+
+${type === 'TikTok Video Script' || type === 'Father\'s Day Script' || type === 'Product Spotlight Script' ? `Format your response EXACTLY like this:
+
+🎯 WHY THIS WILL PERFORM
+[1-2 sentences on why this is timely based on trends]
+
+🎬 HOOK (0-3 seconds)
+[Exact on-screen text or voiceover line that stops the scroll]
+
+📽 MIDDLE (3-25 seconds)
+[Shot by shot — what's on screen, what text overlays say, any voiceover]
+
+📣 CTA (last 3 seconds)
+[Exact closing line + follow/link in bio]
+
+🎵 SOUND SUGGESTION
+[Trending audio style or specific sound recommendation]
+
+📱 CAPTION
+[Ready to paste caption under 150 chars]
+
+#️⃣ HASHTAGS
+[15 hashtags — mix of niche, trending, broad]` : ''}
+
+${type === 'Caption + Hashtags' ? `Format:
+📱 CAPTION: [Under 150 chars, punchy, premium feel]
+#️⃣ HASHTAGS: [20 hashtags — trending + niche]
+⏰ BEST TIME TO POST: [Day and time recommendation]` : ''}
+
+${type === 'Weekly Content Plan' ? `Give a 7-day content plan. For each day:
+DAY + DATE | Content type | Hook line | Product angle
+Base the plan around current trends found above.` : ''}
+
+${type === 'Pinterest Pin' ? `Format:
+📌 TITLE: [Under 60 chars, keyword-rich]
+📝 DESCRIPTION: [150-200 chars, keywords woven in naturally, ends with CTA]
+🔍 KEYWORDS: [12 search terms]
+🖼 IMAGE SUGGESTION: [What to show in the pin graphic]` : ''}
+
+Be specific. Be actionable. No generic advice.`
+  },
+
+  tiktokEssential: {
+    label: 'EssentialFinds',
+    types: ['Trending Product Script', 'Hook Line Pack', 'Weekly Content Plan', 'Caption + Hashtags', 'TikTok Shop Promo Script'],
+    searchQuery: (type) => `TikTok Shop trending products home lifestyle ${currentMonth} ${new Date().getFullYear()} best sellers`,
+    prompt: (type, trends) => `You are creating content for EssentialFindsDaily, a TikTok affiliate account promoting everyday home and lifestyle products. Francisco does NOT appear on camera — text-on-screen and voiceover style. Goal: drive TikTok Shop sales through affiliate links.
+
+Today is ${today}.
+
+LIVE TREND INTEL — what's selling and trending right now:
+${trends}
+
+Generate a ${type} for EssentialFindsDaily. Tone: casual, scroll-stopping, value-driven. Focus on products that are actually trending and selling.
+
+${type === 'Trending Product Script' || type === 'TikTok Shop Promo Script' ? `Format EXACTLY:
+
+🎯 WHY THIS PRODUCT NOW
+[Why this product is trending based on the intel above]
+
+🎬 HOOK (0-3 seconds)
+[Scroll-stopping opener — problem or curiosity-based]
+
+📽 MIDDLE (3-25 seconds)
+[3 benefit points — what's on screen, text overlays]
+
+📣 CTA
+[Drive to TikTok Shop link in bio]
+
+🎵 SOUND SUGGESTION
+[Trending audio style]
+
+📱 CAPTION
+[Under 150 chars]
+
+#️⃣ HASHTAGS
+[15 hashtags]
+
+💰 AFFILIATE ANGLE
+[How to position this for max clicks]` : ''}
+
+${type === 'Hook Line Pack' ? `Give 8 scroll-stopping hook lines for home/lifestyle products.
+Each under 10 words. Mix: problem-based, curiosity, shock value, FOMO.
+Base them on what's currently trending in the intel above.` : ''}
+
+${type === 'Weekly Content Plan' ? `7-day content plan based on current trending products.
+Each day: Product category | Hook | Content angle | Best posting time` : ''}
+
+${type === 'Caption + Hashtags' ? `📱 CAPTION: [Under 150 chars, drives to link in bio]
+#️⃣ HASHTAGS: [20 hashtags — TikTok Shop + product niche]
+⏰ BEST TIME TO POST: [Specific recommendation]` : ''}`
+  },
+
+  linkedin: {
+    label: 'LinkedIn',
+    types: ['Hospital Purchasing Tip', 'Industry News Post', 'Career Story', 'Engagement Question', 'Week-in-Review'],
+    searchQuery: (type) => `hospital supply chain purchasing healthcare procurement news ${currentMonth} ${new Date().getFullYear()}`,
+    prompt: (type, trends) => `You are writing a LinkedIn post for Francisco Lopez, 26, materials management at a 55-65 bed ScionHealth hospital in San Bernardino, CA. He posts practical hospital purchasing and supply chain tips twice a week. Audience: healthcare administrators, supply chain professionals, hospital buyers, procurement managers.
+
+Today is ${today}.
+
+LIVE INDUSTRY INTEL — current news and trends in hospital supply chain:
+${trends}
+
+Generate a ${type} LinkedIn post. Tone: authentic, practical, first-person. NOT corporate. NOT "excited to share." Real talk from someone doing the work.
+
+Format EXACTLY:
+
+✍️ POST:
+[The full LinkedIn post — strong hook first line, 3-4 short paragraphs, optional bullets, closing line or question]
+
+📊 POST STATS:
+Word count: [X] | Estimated read time: [X sec]
+
+⏰ BEST DAY/TIME TO POST: [Specific recommendation for LinkedIn algorithm]
+
+💬 FOLLOW-UP COMMENT IDEA:
+[A comment Francisco should post on his own post 30 min after to boost engagement]
+
+🔁 REPURPOSE TIP:
+[How to turn this post into a Pinterest pin or TikTok script]
+
+Keep it under 220 words. Hook must be strong enough to stop the scroll.`
+  },
+
+  pinterest: {
+    label: 'Pinterest',
+    types: ['Meal Planner Pin', 'Smoke & Iron Pin', 'Hospital Products Pin', 'Weight Loss Pin', 'Lifestyle Pin'],
+    searchQuery: (type) => {
+      const queries = {
+        'Meal Planner Pin': 'meal planning Pinterest trending searches weight loss simple meals',
+        'Smoke & Iron Pin': 'cigar accessories gifts for men Pinterest trending',
+        'Hospital Products Pin': 'hospital supply chain templates digital downloads Pinterest',
+        'Weight Loss Pin': 'weight loss meal prep simple eating Pinterest trending',
+        'Lifestyle Pin': 'men lifestyle productivity tools Pinterest trending'
+      };
+      return queries[type] || 'Pinterest trending searches lifestyle productivity';
+    },
+    prompt: (type, trends) => `You are creating Pinterest content for Francisco Lopez (Pinterest: Cisco's Finds). He sells digital products on Gumroad and runs Smoke & Iron.
+
+Products:
+- SimpleEatsPlanner — $3.99 — weekly meal planner, lost 60 lbs eating rice and chicken
+- Daily Hospital Purchasing Request Log — $9.99
+- Daily Hospital Refill Log — $4.99
+- Smoke & Iron — premium cigar accessories brand
+
+Today is ${today}. Pinterest is a search engine — optimize every word for discovery.
+
+LIVE PINTEREST TREND INTEL:
+${trends}
+
+Generate a ${type}. Use trending keywords from the intel above.
+
+Format EXACTLY:
+
+📌 PIN TITLE: [Under 60 chars — keyword-rich, includes a number or power word]
+
+📝 PIN DESCRIPTION: [150-200 chars — conversational, 3-4 keywords woven in naturally, ends with CTA like "grab it below" or "link in bio"]
+
+🔍 SEARCH KEYWORDS: [15 exact search phrases people type on Pinterest]
+
+🖼 GRAPHIC SUGGESTION: [What the pin image should show — be specific]
+
+🎨 TEXT OVERLAY: [What text to put on the pin graphic itself]
+
+📊 TREND NOTE: [Why this pin will perform well right now based on the intel]`
+  },
+
+  gumroad: {
+    label: 'Gumroad',
+    types: ['SimpleEats Promo Post', 'Hospital Log Promo', 'Cross-Platform Launch Post', 'Product Description', 'Buyer Email'],
+    searchQuery: (type) => `digital products trending Gumroad Etsy best sellers ${currentMonth} ${new Date().getFullYear()} templates planners`,
+    prompt: (type, trends) => `You are writing sales copy for Francisco Lopez's Gumroad store (francisco3507.gumroad.com).
+
+Products:
+- SimpleEatsPlanner — $3.99 — weekly meal planner based on losing 60 lbs eating rice and chicken. Real story, real results.
+- Daily Hospital Purchasing Request Log — $9.99 — built from real hospital materials management experience
+- Daily Hospital Refill Log — $4.99
+- Vendor Contact Directory — $7.99 (coming soon)
+
+Today is ${today}.
+
+LIVE DIGITAL PRODUCT MARKET INTEL:
+${trends}
+
+Generate a ${type}. Tone: honest, outcome-driven, relatable. No hype. Real person, real products, real results.
+
+${type === 'Product Description' ? `Write descriptions for ALL products. Format each:
+PRODUCT NAME + PRICE
+WHO IT'S FOR: [1 line]
+WHAT IT DOES: [2-3 lines]
+THE RESULT: [Outcome-focused close]` : ''}
+
+${type === 'Cross-Platform Launch Post' ? `Write one post that works on TikTok caption, LinkedIn, AND Pinterest description.
+Short. Punchy. Outcome-focused. Links to gumroad store.` : ''}
+
+${type === 'Buyer Email' ? `Write a short cold outreach email to either:
+A) Someone who wants to lose weight (SimpleEats)
+B) Someone who works in a hospital (Purchasing Log)
+Under 120 words. Subject line included. Real and human, not salesy.` : ''}
+
+${type.includes('Promo') ? `Write a social post promoting this product.
+Include: hook, what it does, result, price, CTA.
+Versions for: TikTok caption | LinkedIn | Pinterest` : ''}`
+  },
+
+  miicafecito: {
+    label: 'Miicafecito',
+    types: ['Instagram Caption', 'Story Sequence', 'Seasonal Drink Post', 'Engagement Post', 'Weekly Content Plan'],
+    searchQuery: (type) => `coffee shop Instagram trending content ${currentMonth} ${new Date().getFullYear()} small business cafe aesthetic`,
+    prompt: (type, trends) => `You are creating content for Miicafecito, a home coffee shop in San Bernardino, CA. Run by Francisco's girlfriend. 393K monthly Instagram views. Website: miicafecito.github.io/Miicafecito. Aesthetic: warm, cozy, handcrafted, local, Latina-owned energy. Spanish words welcome naturally.
+
+Today is ${today}. Current month: ${currentMonth}.
+
+LIVE COFFEE SHOP CONTENT TREND INTEL:
+${trends}
+
+Generate a ${type} for Miicafecito's Instagram. Use trends above to make it timely.
+
+${type === 'Instagram Caption' ? `Format:
+📱 CAPTION: [Warm, personal, 1-2 sentences + question or CTA. 2-3 emojis.]
+#️⃣ HASHTAGS: [20 hashtags — local + coffee niche + trending]
+⏰ BEST TIME TO POST: [Day and time]` : ''}
+
+${type === 'Story Sequence' ? `Give a 5-story sequence — like a mini behind-the-scenes.
+Each story: what's shown | text overlay | poll or question sticker idea` : ''}
+
+${type === 'Seasonal Drink Post' ? `Write a post for a ${currentMonth} seasonal drink special.
+Include: drink name, description, caption, hashtags, price suggestion.` : ''}
+
+${type === 'Engagement Post' ? `Write a post designed to explode in comments.
+Options: this or that, would you rather, fill in the blank, hot take.
+Coffee/local/lifestyle angle.` : ''}
+
+${type === 'Weekly Content Plan' ? `7-day Instagram plan for Miicafecito.
+Each day: Content type | Caption angle | Visual idea | Best posting time` : ''}`
+  }
+};
+
+let selectedPlatform = 'smokeIron';
+let selectedType = null;
+
+function selectPlatform(platform, el) {
+  selectedPlatform = platform;
+  selectedType = null;
+  document.querySelectorAll('.studio-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderStudioTypes();
+  document.getElementById('studioOutput').innerHTML = '<span style="color:var(--text-dim);font-family:\'DM Mono\',monospace;font-size:11px">Select a content type, then hit Generate. Live trend search will run automatically.</span>';
+  document.getElementById('studioTrendBar').style.display = 'none';
+}
+
+function renderStudioTypes() {
+  const types = PLATFORMS[selectedPlatform].types;
+  document.getElementById('studioTypes').innerHTML = types.map((t, i) =>
+    `<button class="studio-type ${i === 0 ? 'active' : ''}" onclick="selectType('${t}', this)">${t.replace(/'/g, "&#39;")}</button>`
+  ).join('');
+  selectedType = types[0];
+}
+
+function selectType(type, el) {
+  selectedType = type;
+  document.querySelectorAll('.studio-type').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function formatStudioOutput(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--gold)">$1</strong>')
+    .replace(/^(🎯|🎬|📽|📣|🎵|📱|#️⃣|💰|✍️|📊|⏰|💬|🔁|📌|📝|🔍|🖼|🎨|💡|🔥|📅|⚡)/gm, '<br><span style="color:var(--gold);font-family:DM Mono,monospace;font-size:11px;letter-spacing:1px">$1</span>')
+    .replace(/\n/g, '<br>');
+}
+
+async function generateContent() {
+  if (!selectedType) return;
+  const btn = document.getElementById('studioBtn');
+  const output = document.getElementById('studioOutput');
+  const trendBar = document.getElementById('studioTrendBar');
+  const trendText = document.getElementById('studioTrendText');
+
+  btn.disabled = true;
+  btn.textContent = '⟳ SEARCHING TRENDS...';
+  output.innerHTML = '<span style="color:var(--text-dim);font-family:\'DM Mono\',monospace;font-size:11px">🔍 Searching live trends... then generating your content...</span>';
+  trendBar.style.display = 'block';
+  trendText.textContent = 'Searching...';
+
+  const platform = PLATFORMS[selectedPlatform];
+  const searchQuery = typeof platform.searchQuery === 'function'
+    ? platform.searchQuery(selectedType)
+    : platform.searchQuery;
+
+  try {
+    // Step 1: Search trends
+    const searchRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Search for current trends: "${searchQuery}". Return only a bullet list of 5-7 specific trend insights — what's trending, what's selling, what's getting engagement right now. Be specific with names, numbers, and angles. No intro, no fluff.`
+        }]
+      })
+    });
+
+    const searchData = await searchRes.json();
+    let trendIntel = '';
+    for (const block of searchData.content) {
+      if (block.type === 'text') trendIntel += block.text;
+    }
+
+    trendText.textContent = trendIntel.replace(/\n/g, ' ').substring(0, 120) + '...';
+    btn.textContent = '⟳ WRITING CONTENT...';
+
+    // Step 2: Generate content using trend intel
+    const contentRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 900,
+        messages: [{
+          role: 'user',
+          content: platform.prompt(selectedType, trendIntel)
+        }]
+      })
+    });
+
+    const contentData = await contentRes.json();
+    const text = contentData.content[0]?.text || 'Could not generate content. Try again.';
+
+    output.innerHTML = `<div id="studioText">${formatStudioOutput(text)}</div>`;
+
+  } catch (err) {
+    trendBar.style.display = 'none';
+    output.innerHTML = '<span style="color:var(--text-dim);font-family:\'DM Mono\',monospace;font-size:11px">⚠ Connection error. Check API key and try again.</span>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ GENERATE + SEARCH TRENDS';
+}
+
+function copyContent() {
+  const text = document.getElementById('studioText')?.innerText || '';
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('studioCopyAll');
+    if (btn) { btn.textContent = 'COPIED!'; setTimeout(() => { btn.textContent = 'COPY'; }, 2000); }
+  });
+}
+
+renderStudioTypes();
+
 async function generateBrief() {
   const btn = document.getElementById('briefBtn');
   const output = document.getElementById('briefOutput');
@@ -820,7 +1321,7 @@ async function generateBrief() {
   output.className = 'brief-output loading';
   output.textContent = 'Connecting to AI... this may take 15-20 seconds...';
 
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const briefToday = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -832,7 +1333,7 @@ async function generateBrief() {
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
-          content: `Today is ${today}. Generate a SHORT morning brief for Francisco, an entrepreneur. Search for current info. Use this EXACT format with bullet points — keep it tight and scannable:
+          content: `Today is ${briefToday}. Generate a SHORT morning brief for Francisco, an entrepreneur. Search for current info. Use this EXACT format with bullet points — keep it tight and scannable:
 
 📈 MARKET
 • [One line on S&P 500 / Nasdaq direction today]
