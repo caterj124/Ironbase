@@ -984,7 +984,7 @@ async function generateMotivation() {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 150,
         messages: [{
           role: 'user',
@@ -1052,7 +1052,7 @@ async function askIronbase() {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 300,
         messages: [{
           role: 'user',
@@ -1398,7 +1398,7 @@ async function generateContent() {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 400,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
@@ -1433,7 +1433,7 @@ async function generateContent() {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 900,
         messages: [{
           role: 'user',
@@ -1491,7 +1491,7 @@ async function generateBrief() {
       method: 'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
