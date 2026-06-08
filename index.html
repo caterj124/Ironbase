@@ -218,7 +218,9 @@ async function generate() {
   results.classList.remove('visible');
   results.innerHTML = '';
 
-  const apiCall = async (messages, maxTokens = 500) => {
+  const apiCall = async (messages, maxTokens = 500, useSearch = false) => {
+    const body = { model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages };
+    if (useSearch) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -227,11 +229,17 @@ async function generate() {
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     let text = '';
-    if (data.content) for (const b of data.content) if (b.type === 'text') text += b.text;
+    if (data.content) for (const b of data.content) {
+      if (b.type === 'text') text += b.text;
+      if (b.type === 'tool_result' && b.content) {
+        if (Array.isArray(b.content)) for (const c of b.content) { if (c.type === 'text') text += c.text; }
+        else if (typeof b.content === 'string') text += b.content;
+      }
+    }
     return text;
   };
 
@@ -243,24 +251,28 @@ async function generate() {
       loadingText.textContent = 'AI SEARCHING FOR BEST PRODUCTS...';
       progressFill.style.width = '20%';
 
-      const searchPrompt = `You are a Pinterest affiliate marketing expert. Find the ${pinCount} best Amazon products for this board: ${theme}
+      const searchPrompt = `Search Amazon and Google Shopping RIGHT NOW for the ${pinCount} best products for: ${theme}
 
-For each product give me the most popular, best-selling, highest-rated options that are currently trending.
+Find what is actually trending and best selling TODAY. Look for:
+- Most sold in past month
+- Highest ratings (4+ stars)
+- Best price point
+- Currently popular on Pinterest and social media
 
 Respond ONLY in this JSON format:
 {
   "products": [
     {
-      "name": "exact product name to search on Amazon",
+      "name": "exact product name",
       "search_term": "amazon search term",
-      "why": "why this is trending/bestselling right now",
+      "why": "why this is trending right now",
       "price_range": "$X-$XX",
       "rating": "4.X stars"
     }
   ]
 }`;
 
-      const searchResult = await apiCall([{ role: 'user', content: searchPrompt }], 600);
+      const searchResult = await apiCall([{ role: 'user', content: searchPrompt }], 600, true);
       try {
         const clean = searchResult.replace(/```json|```/g, '').trim();
         const parsed = JSON.parse(clean);
