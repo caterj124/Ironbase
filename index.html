@@ -1293,42 +1293,9 @@ async function generateContent() {
     : platform.searchQuery;
 
   try {
-    // Step 1: Search trends
-    const searchRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: apiHeaders(),
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 200,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{
-          role: 'user',
-          content: `Search for current trends: "${searchQuery}". Return only a bullet list of 5-7 specific trend insights — what's trending, what's selling, what's getting engagement right now. Be specific with names, numbers, and angles. No intro, no fluff.`
-        }]
-      })
-    });
-
-    const searchData = await searchRes.json();
-    let trendIntel = '';
-    if (searchData.content) {
-      for (const block of searchData.content) {
-        if (block.type === 'text') trendIntel += block.text;
-        if (block.type === 'tool_result') {
-          const content = block.content;
-          if (Array.isArray(content)) {
-            for (const c of content) { if (c.type === 'text') trendIntel += c.text; }
-          } else if (typeof content === 'string') {
-            trendIntel += content;
-          }
-        }
-      }
-    }
-    if (!trendIntel) trendIntel = 'Current trends in this niche — focus on quality and engagement.';
-
-    trendText.textContent = trendIntel.replace(/\n/g, ' ').substring(0, 120) + '...';
+    // Single call — generate content directly with built-in knowledge
     btn.textContent = '⟳ WRITING CONTENT...';
 
-    // Step 2: Generate content using trend intel
     const contentRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: apiHeaders(),
@@ -1337,7 +1304,7 @@ async function generateContent() {
         max_tokens: 500,
         messages: [{
           role: 'user',
-          content: platform.prompt(selectedType, trendIntel)
+          content: platform.prompt(selectedType, `Current trends in ${platform.label} niche — focus on what performs well right now.`)
         }]
       })
     });
@@ -1353,6 +1320,7 @@ async function generateContent() {
     if (!text && contentData.error) text = 'API Error: ' + contentData.error.message;
     if (!text) text = 'Could not generate content. Try again.';
 
+    trendBar.style.display = 'none';
     output.innerHTML = `<div id="studioText">${formatStudioOutput(text)}</div>`;
 
   } catch (err) {
