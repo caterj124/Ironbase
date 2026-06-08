@@ -1443,12 +1443,14 @@ async function generateContent() {
     });
 
     const contentData = await contentRes.json();
+    console.log('Content API response:', JSON.stringify(contentData));
     let text = '';
     if (contentData.content) {
       for (const block of contentData.content) {
         if (block.type === 'text') text += block.text;
       }
     }
+    if (!text && contentData.error) text = 'API Error: ' + contentData.error.message;
     if (!text) text = 'Could not generate content. Try again.';
 
     output.innerHTML = `<div id="studioText">${formatStudioOutput(text)}</div>`;
