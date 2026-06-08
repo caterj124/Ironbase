@@ -1399,7 +1399,7 @@ async function generateContent() {
       headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 400,
+        max_tokens: 200,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
@@ -1434,7 +1434,7 @@ async function generateContent() {
       headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 900,
+        max_tokens: 500,
         messages: [{
           role: 'user',
           content: platform.prompt(selectedType, trendIntel)
@@ -1492,7 +1492,7 @@ async function generateBrief() {
       headers: apiHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
