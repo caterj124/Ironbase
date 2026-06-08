@@ -295,24 +295,28 @@ Respond ONLY in this JSON format:
         loadingText.textContent = `GENERATING PIN ${i + 1} OF ${products.length} — ${p.name.substring(0, 30).toUpperCase()}...`;
         progressFill.style.width = (40 + ((i + 1) / products.length) * 60) + '%';
 
-        const pinPrompt = `Create an optimized Pinterest pin for this Amazon affiliate product.
+        const pinPrompt = `Create Pinterest pin content for this Amazon affiliate product.
 
 Product: ${p.name}
-Why it's trending: ${p.why}
-Price range: ${p.price_range}
+Why trending: ${p.why}
+Price: ${p.price_range}
 Rating: ${p.rating}
-Amazon search term: ${p.search_term}
-Associates ID: ${associatesId}
-Board theme: ${theme}
+Theme: ${theme}
+
+STRICT RULES:
+- Title MUST be under 55 characters. Short. Punchy. One keyword + power word.
+- Description MUST be exactly 150 chars. Keywords natural. Ends with CTA. Include #ad.
+- Keywords MUST be specific to THIS product — not generic.
+- Tags MUST be specific — mix broad and niche.
 
 Respond ONLY in JSON:
 {
-  "title": "SEO pin title under 60 chars with power word and keyword",
-  "description": "155 char description — keywords natural, ends with CTA, includes #ad disclosure",
-  "tags": ["tag1","tag2","tag3","tag4","tag5"],
-  "keywords": "10 Pinterest search keywords comma separated",
-  "amazon_search": "exact search term to find this on Amazon",
-  "why_it_sells": "one sentence on why Pinterest users will click this"
+  "title": "short punchy title under 55 chars",
+  "description": "exactly 150 char description with product-specific keywords and #ad",
+  "tags": ["specific tag 1","specific tag 2","specific tag 3","specific tag 4","specific tag 5"],
+  "keywords": "10 product-specific Pinterest search keywords comma separated",
+  "amazon_search": "exact search term",
+  "why_it_sells": "specific reason this product is trending right now"
 }`;
 
         const pinResult = await apiCall([{ role: 'user', content: pinPrompt }], 350);
@@ -348,8 +352,11 @@ Respond ONLY in JSON:
 Product: ${p.name}
 Link: ${p.link}
 Theme: ${theme}
+
+STRICT RULES — Title under 55 chars, description exactly 150 chars with #ad, specific keywords only.
+
 Respond ONLY in JSON:
-{"title":"SEO title under 60 chars","description":"155 chars, keywords, CTA, #ad","tags":["t1","t2","t3","t4","t5"],"keywords":"10 keywords comma separated","why_it_sells":"one sentence"}`;
+{"title":"short punchy title under 55 chars","description":"150 char description specific keywords CTA #ad","tags":["specific1","specific2","specific3","specific4","specific5"],"keywords":"10 product-specific keywords comma separated","why_it_sells":"specific reason this sells"}`;
 
         const pinResult = await apiCall([{ role: 'user', content: pinPrompt }], 300);
         let pin;
