@@ -1276,6 +1276,10 @@ function formatStudioOutput(text) {
 
 async function generateContent() {
   if (!selectedType) return;
+  if (!getApiKey()) {
+    openKeyModal();
+    return;
+  }
   const btn = document.getElementById('studioBtn');
   const output = document.getElementById('studioOutput');
   const trendBar = document.getElementById('studioTrendBar');
@@ -1325,7 +1329,7 @@ async function generateContent() {
 
   } catch (err) {
     trendBar.style.display = 'none';
-    output.innerHTML = '<span style="color:var(--text-dim);font-family:\'DM Mono\',monospace;font-size:11px">⚠ Connection error. Check API key and try again.</span>';
+    output.innerHTML = `<span style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px">⚠ Error: ${err.message}</span>`;
   }
 
   btn.disabled = false;
