@@ -1410,9 +1410,20 @@ async function generateContent() {
 
     const searchData = await searchRes.json();
     let trendIntel = '';
-    for (const block of searchData.content) {
-      if (block.type === 'text') trendIntel += block.text;
+    if (searchData.content) {
+      for (const block of searchData.content) {
+        if (block.type === 'text') trendIntel += block.text;
+        if (block.type === 'tool_result') {
+          const content = block.content;
+          if (Array.isArray(content)) {
+            for (const c of content) { if (c.type === 'text') trendIntel += c.text; }
+          } else if (typeof content === 'string') {
+            trendIntel += content;
+          }
+        }
+      }
     }
+    if (!trendIntel) trendIntel = 'Current trends in this niche — focus on quality and engagement.';
 
     trendText.textContent = trendIntel.replace(/\n/g, ' ').substring(0, 120) + '...';
     btn.textContent = '⟳ WRITING CONTENT...';
@@ -1432,7 +1443,13 @@ async function generateContent() {
     });
 
     const contentData = await contentRes.json();
-    const text = contentData.content[0]?.text || 'Could not generate content. Try again.';
+    let text = '';
+    if (contentData.content) {
+      for (const block of contentData.content) {
+        if (block.type === 'text') text += block.text;
+      }
+    }
+    if (!text) text = 'Could not generate content. Try again.';
 
     output.innerHTML = `<div id="studioText">${formatStudioOutput(text)}</div>`;
 
